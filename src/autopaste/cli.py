@@ -23,28 +23,54 @@ SOFTWARE.
 """
 
 import sys
+import argparse
+from importlib.metadata import version, PackageNotFoundError
 from autopaste.upload import upload
 
-def main():
-  if len(sys.argv) > 1:
-    filepath = sys.argv[1]
+def get_version():
     try:
-      with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
+        return version("autopaste")
+    except PackageNotFoundError:
+        return "1.0.0"
 
-    except FileNotFoundError:
-      print(f"Error: {filepath} doesn't exist!")
-      return
+def main():
+    parser = argparse.ArgumentParser(
+        description="A minimalist CLI tool to upload text and files to paste.c-net.org"
+    )
+    parser.add_argument(
+        "filepath", 
+        nargs="?", 
+        help="Optional path to the file you want to upload"
+    )
 
-  elif not sys.stdin.isatty():
+    parser.add_argument(
+        "-v", "--version", 
+        action="version", 
+        version=f"autopaste {get_version()}"
+    )
+
+    args = parser.parse_args()
+
+    content = ""
+
+    if args.filepath:
+        try:
+            with open(args.filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"Error: '{args.filepath}' doesn't exist!")
+            return
+
+    elif not sys.stdin.isatty():
         content = sys.stdin.read()
 
-  else:
-    content = input("Paste or Write: ")
+    else:
+        content = input("Paste or Write: ")
+
     if not content.strip():
-      print("Error: Content cannot be empty!")
-      return
+        print("Error: Content cannot be empty!")
+        return
 
-  link = upload(content)
-  print(f"Your pastebin url is: {link}")
 
+    link = upload(content)
+    print(f"Your pastebin url is: {link}")
