@@ -3,7 +3,7 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - 'v*' # Triggers the workflow whenever you push a tag starting with 'v'
+      - 'v*'
 
 jobs:
   build-and-publish:
